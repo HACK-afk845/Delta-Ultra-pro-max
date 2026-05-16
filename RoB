@@ -101,7 +101,7 @@ end
 
 -- [ 5. إضافة الأزرار المتاحة ]
 
-AddMenuButton("L3 on top 🌑", function()
+AddMenuButton("L3 ON TOP 🌑", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/CeVJD20Y"))()
 end)
 
@@ -138,7 +138,7 @@ AddMenuButton("أداة المساعدة VR7", function() loadstring(game:HttpGe
 AddMenuButton("كاشف اللاعبين", function() loadstring(game:HttpGet('https://pastebin.com/raw/1KF6k8ne'))() end)
 AddMenuButton("سكربت Blood", function() loadstring(game:HttpGet('https://pastebin.com/raw/YE8hR6zG'))() end)
 
--- زر المعلومات
+-- زر المعلومات (تم إفراغه وتعديله ليصبح مجهول)
 local InfoBtn = Instance.new("TextButton", BaseFrame)
 InfoBtn.Size = UDim2.new(0, 150, 0, 40)
 InfoBtn.Position = UDim2.new(0.5, -75, 1, -50)
