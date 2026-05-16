@@ -1,5 +1,5 @@
 --[[
-	✨ Optimized, Cleaned & English Edition
+    ✨ Optimized, English & Custom Spam Feature
 ]]
 
 local Players = game:GetService("Players")
@@ -8,195 +8,92 @@ local coreGui = game:GetService("CoreGui")
 local tweenService = game:GetService("TweenService")
 local runService = game:GetService("RunService")
 
--- [ 1. Interface Initialization ]
-local coreGuiContainer = Instance.new("ScreenGui")
+-- [ 1. GUI Initialization ]
+local coreGuiContainer = Instance.new("ScreenGui", coreGui)
 coreGuiContainer.Name = "BaseModule_Interface"
-pcall(function()
-    coreGuiContainer.Parent = coreGui
-end)
 
--- Rainbow Welcome Notification
-local function ShowWelcome()
-    local welcomeLabel = Instance.new("TextLabel", coreGuiContainer)
-    welcomeLabel.Size = UDim2.new(0, 500, 0, 100)
-    welcomeLabel.Position = UDim2.new(0.5, -250, 0.4, 0)
-    welcomeLabel.BackgroundTransparency = 1
-    welcomeLabel.Text = "System Loaded Successfully"
-    welcomeLabel.Font = Enum.Font.GothamBlack
-    welcomeLabel.TextSize = 40
-    
-    task.spawn(function()
-        local start = tick()
-        while tick() - start < 4 do
-            welcomeLabel.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
-            runService.Heartbeat:Wait()
-        end
-        welcomeLabel:Destroy()
-    end)
-end
-task.spawn(ShowWelcome)
-
--- [ 2. Main GUI Frame ]
 local BaseFrame = Instance.new("Frame", coreGuiContainer)
-local FrameCorner = Instance.new("UICorner", BaseFrame)
-local FrameStroke = Instance.new("UIStroke", BaseFrame)
 BaseFrame.Size = UDim2.new(0, 450, 0, 450)
 BaseFrame.Position = UDim2.new(0.5, -225, 0.5, -225)
 BaseFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-BaseFrame.BackgroundTransparency = 0.2
 BaseFrame.Visible = false
-FrameStroke.Thickness = 3
-FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+Instance.new("UICorner", BaseFrame)
+Instance.new("UIStroke", BaseFrame).Thickness = 2
 
--- [ 3. Main Toggle Button ]
 local ControlBtn = Instance.new("TextButton", coreGuiContainer)
-local BtnCorner = Instance.new("UICorner", ControlBtn)
-local BtnStroke = Instance.new("UIStroke", ControlBtn)
-ControlBtn.Size = UDim2.new(0, 110, 0, 50) 
+ControlBtn.Size = UDim2.new(0, 110, 0, 50)
 ControlBtn.Position = UDim2.new(0, 15, 0.5, 0)
 ControlBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 ControlBtn.Text = "MENU"
 ControlBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
-ControlBtn.Font = Enum.Font.GothamBold
-ControlBtn.TextSize = 25 
-ControlBtn.Visible = true 
-BtnStroke.Thickness = 2
+ControlBtn.Draggable = true
+Instance.new("UICorner", ControlBtn)
 
--- Smooth Dragging System
-local dragging, dragInput, dragStart, startPos
-local function update(input)
-    local delta = input.Position - dragStart
-    local targetPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    tweenService:Create(ControlBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPos}):Play()
-end
-
-ControlBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = ControlBtn.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
-    end
-end)
-
-ControlBtn.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-runService.Heartbeat:Connect(function()
-    if dragging and dragInput then update(dragInput) end
-end)
-
--- Rainbow Border Effect
-task.spawn(function()
-    while true do
-        local color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
-        FrameStroke.Color = color
-        BtnStroke.Color = color
-        runService.Heartbeat:Wait()
-    end
-end)
-
-ControlBtn.MouseButton1Click:Connect(function()
-    BaseFrame.Visible = not BaseFrame.Visible
-end)
-
--- [ 4. Menu Layout ]
-local TitleLabel = Instance.new("TextLabel", BaseFrame)
-TitleLabel.Size = UDim2.new(1, 0, 0, 50)
-TitleLabel.Text = "Main Control Panel ⚙️"
-TitleLabel.TextColor3 = Color3.new(1, 1, 1)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextSize = 22
+ControlBtn.MouseButton1Click:Connect(function() BaseFrame.Visible = not BaseFrame.Visible end)
 
 local ScrollContainer = Instance.new("ScrollingFrame", BaseFrame)
-ScrollContainer.Size = UDim2.new(1, -20, 1, -110)
-ScrollContainer.Position = UDim2.new(0, 10, 0, 60)
+ScrollContainer.Size = UDim2.new(1, -20, 1, -60)
+ScrollContainer.Position = UDim2.new(0, 10, 0, 50)
 ScrollContainer.BackgroundTransparency = 1
-ScrollContainer.CanvasSize = UDim2.new(0, 0, 4, 0)
-ScrollContainer.ScrollBarThickness = 4
-local ListLayout = Instance.new("UIListLayout", ScrollContainer)
-ListLayout.Padding = UDim.new(0, 8)
+Instance.new("UIListLayout", ScrollContainer).Padding = UDim.new(0, 8)
 
-local function AddMenuButton(buttonName, actionCallback)
-    local button = Instance.new("TextButton", ScrollContainer)
-    button.Size = UDim2.new(1, -10, 0, 40)
-    button.BackgroundColor3 = Color3.fromRGB(45, 0, 0)
-    button.Text = buttonName
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 16
-    Instance.new("UICorner", button)
-    button.MouseButton1Click:Connect(function()
-        pcall(actionCallback)
-    end)
+local function AddButton(name, callback)
+    local btn = Instance.new("TextButton", ScrollContainer)
+    btn.Size = UDim2.new(1, -10, 0, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 0, 0)
+    btn.Text = name
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", btn)
+    btn.MouseButton1Click:Connect(callback)
 end
 
--- [ 5. Feature Buttons ]
-
-AddMenuButton("L3 on top 🌑", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/HACK-afk845/Delta-Ultra-pro-max/refs/heads/main/RoB"))()
-end)
-
-AddMenuButton("Protect HD Client 🛡️", function()
-    local cleanCount = 0
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj.Name == "HDAdminHDClient" then
-            pcall(function() obj:Destroy() cleanCount = cleanCount + 1 end)
-        end
-    end
-    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "Security System", Text = "Cleaned " .. cleanCount .. " files", Duration = 5})
-end)
-
-AddMenuButton("Full Protection 🛡️", function()
-    local cleanCount = 0
-    local targets = {"logs", "nv", "cmdbar", "clogs", "hdadminhdclient", "hdadmin"}
-    local function ExecutionClean(parent)
-        for _, obj in pairs(parent:GetChildren()) do
-            local found = false
-            for _, name in pairs(targets) do 
-                if obj.Name:lower():find(name) then found = true break end 
-            end
-            if found then pcall(function() obj:Destroy() cleanCount = cleanCount + 1 end) 
-            else pcall(function() ExecutionClean(obj) end) end
-        end
-    end
-    ExecutionClean(workspace) ExecutionClean(localPlayer.PlayerGui)
-end)
-
-AddMenuButton("Spam Chat Message 🔥", function()
-    local messageString = "System compromised ;re ;clogs "
-    local finalMessage = string.rep(messageString, 15)
-    
+-- [ 2. Custom Spam Input Function ]
+local function SendSpam(text)
     local textChatService = game:GetService("TextChatService")
     if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
         local channel = textChatService.TextChannels:FindFirstChild("RBXGeneral")
-        if channel then channel:SendAsync(finalMessage) end
+        if channel then channel:SendAsync(text) end
     else
-        local remote = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
-        if remote and remote:FindFirstChild("SayMessageRequest") then
-            remote.SayMessageRequest:FireServer(finalMessage, "All")
+        game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer(text, "All")
+    end
+end
+
+-- [ 3. Features ]
+
+AddButton("Open Script Again", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/HACK-afk845/Delta-Ultra-pro-max/refs/heads/main/RoB"))()
+end)
+
+AddButton("Custom Chat Spam", function()
+    local input = Instance.new("TextBox", BaseFrame)
+    input.Size = UDim2.new(0, 300, 0, 50)
+    input.Position = UDim2.new(0.5, -150, 0.5, -25)
+    input.PlaceholderText = "Enter message here..."
+    input.Text = ""
+    input.Visible = true
+    
+    local confirm = Instance.new("TextButton", input)
+    confirm.Size = UDim2.new(0, 100, 0, 30)
+    confirm.Position = UDim2.new(0.5, -50, 1, 10)
+    confirm.Text = "SEND SPAM"
+    
+    confirm.MouseButton1Click:Connect(function()
+        for i = 1, 10 do
+            SendSpam(input.Text)
+            task.wait(0.5)
         end
+        input:Destroy()
+    end)
+end)
+
+AddButton("Clear HD Admin", function()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name:lower():find("hdadmin") then v:Destroy() end
     end
 end)
 
-AddMenuButton("VR7 Tool Help", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/VR7ss/OMK/refs/heads/main/VR7-ON-TOP"))() end)
-AddMenuButton("Player Finder", function() loadstring(game:HttpGet('https://pastebin.com/raw/1KF6k8ne'))() end)
-AddMenuButton("Blood Script", function() loadstring(game:HttpGet('https://pastebin.com/raw/YE8hR6zG'))() end)
-
--- Info Button
-local InfoBtn = Instance.new("TextButton", BaseFrame)
-InfoBtn.Size = UDim2.new(0, 150, 0, 40)
-InfoBtn.Position = UDim2.new(0.5, -75, 1, -50)
-InfoBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-InfoBtn.Text = "System Info 👤"
-InfoBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", InfoBtn)
-InfoBtn.MouseButton1Click:Connect(function()
-    print("System active and running successfully.")
+AddButton("VR7 Tool", function() 
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/VR7ss/OMK/refs/heads/main/VR7-ON-TOP"))() 
 end)
+
+print("System Ready - English Version")
