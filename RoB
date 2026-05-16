@@ -1,61 +1,72 @@
 --[[
-    ✨ Optimized, English & Custom Spam Feature
+	✨ Master X - Custom Edition (English GUI / Arabic Content)
 ]]
 
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
+local localPlayer = game.Players.LocalPlayer
 local coreGui = game:GetService("CoreGui")
-local tweenService = game:GetService("TweenService")
-local runService = game:GetService("RunService")
+local textChatService = game:GetService("TextChatService")
 
--- [ 1. GUI Initialization ]
-local coreGuiContainer = Instance.new("ScreenGui", coreGui)
-coreGuiContainer.Name = "BaseModule_Interface"
+-- [ 1. Interface Initialization ]
+local sg = Instance.new("ScreenGui", coreGui)
+sg.Name = "MasterX_Final_Custom"
 
-local BaseFrame = Instance.new("Frame", coreGuiContainer)
-BaseFrame.Size = UDim2.new(0, 450, 0, 450)
-BaseFrame.Position = UDim2.new(0.5, -225, 0.5, -225)
-BaseFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-BaseFrame.Visible = false
-Instance.new("UICorner", BaseFrame)
-Instance.new("UIStroke", BaseFrame).Thickness = 2
+-- رسالة الترحيب بالعربي
+local function Welcome()
+    local welcomeLabel = Instance.new("TextLabel", sg)
+    welcomeLabel.Size = UDim2.new(0, 500, 0, 100)
+    welcomeLabel.Position = UDim2.new(0.5, -250, 0.4, 0)
+    welcomeLabel.BackgroundTransparency = 1
+    welcomeLabel.Text = "تم تشغيل النظام بنجاح"
+    welcomeLabel.Font = Enum.Font.GothamBlack
+    welcomeLabel.TextSize = 40
+    task.spawn(function()
+        local start = tick()
+        while tick() - start < 5 do
+            welcomeLabel.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+            task.wait()
+        end
+        welcomeLabel:Destroy()
+    end)
+end
+task.spawn(Welcome)
 
-local ControlBtn = Instance.new("TextButton", coreGuiContainer)
-ControlBtn.Size = UDim2.new(0, 110, 0, 50)
-ControlBtn.Position = UDim2.new(0, 15, 0.5, 0)
-ControlBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-ControlBtn.Text = "MENU"
-ControlBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
-ControlBtn.Draggable = true
-Instance.new("UICorner", ControlBtn)
+-- [ 2. Main GUI ]
+local MainFrame = Instance.new("Frame", sg)
+local MainCorner = Instance.new("UICorner", MainFrame)
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainFrame.Size = UDim2.new(0, 450, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -225, 0.5, -225)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BackgroundTransparency = 0.2
+MainFrame.Visible = false
+MainStroke.Thickness = 3
 
-ControlBtn.MouseButton1Click:Connect(function() BaseFrame.Visible = not BaseFrame.Visible end)
+local MasterBtn = Instance.new("TextButton", sg)
+local BtnCorner = Instance.new("UICorner", MasterBtn)
+local BtnStroke = Instance.new("UIStroke", MasterBtn)
+MasterBtn.Size = UDim2.new(0, 110, 0, 50)
+MasterBtn.Position = UDim2.new(0, 15, 0.5, 0)
+MasterBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MasterBtn.Text = "MENU"
+MasterBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+MasterBtn.Font = Enum.Font.GothamBold
+MasterBtn.Draggable = true
+MasterBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
-local ScrollContainer = Instance.new("ScrollingFrame", BaseFrame)
-ScrollContainer.Size = UDim2.new(1, -20, 1, -60)
-ScrollContainer.Position = UDim2.new(0, 10, 0, 50)
-ScrollContainer.BackgroundTransparency = 1
-Instance.new("UIListLayout", ScrollContainer).Padding = UDim.new(0, 8)
+local Scroll = Instance.new("ScrollingFrame", MainFrame)
+Scroll.Size = UDim2.new(1, -20, 1, -110)
+Scroll.Position = UDim2.new(0, 10, 0, 60)
+Scroll.BackgroundTransparency = 1
+Instance.new("UIListLayout", Scroll).Padding = UDim.new(0, 8)
 
 local function AddButton(name, callback)
-    local btn = Instance.new("TextButton", ScrollContainer)
-    btn.Size = UDim2.new(1, -10, 0, 40)
-    btn.BackgroundColor3 = Color3.fromRGB(45, 0, 0)
-    btn.Text = name
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    Instance.new("UICorner", btn)
-    btn.MouseButton1Click:Connect(callback)
-end
-
--- [ 2. Custom Spam Input Function ]
-local function SendSpam(text)
-    local textChatService = game:GetService("TextChatService")
-    if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        local channel = textChatService.TextChannels:FindFirstChild("RBXGeneral")
-        if channel then channel:SendAsync(text) end
-    else
-        game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer(text, "All")
-    end
+    local b = Instance.new("TextButton", Scroll)
+    b.Size = UDim2.new(1, -10, 0, 40)
+    b.BackgroundColor3 = Color3.fromRGB(45, 0, 0)
+    b.Text = name
+    b.TextColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(callback)
 end
 
 -- [ 3. Features ]
@@ -64,36 +75,50 @@ AddButton("Open Script Again", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/HACK-afk845/Delta-Ultra-pro-max/refs/heads/main/RoB"))()
 end)
 
+-- زر الـ Spam يفتح خانة إدخال، تكتب فيها أي كلام عربي
 AddButton("Custom Chat Spam", function()
-    local input = Instance.new("TextBox", BaseFrame)
+    local input = Instance.new("TextBox", MainFrame)
     input.Size = UDim2.new(0, 300, 0, 50)
     input.Position = UDim2.new(0.5, -150, 0.5, -25)
-    input.PlaceholderText = "Enter message here..."
-    input.Text = ""
-    input.Visible = true
-    
-    local confirm = Instance.new("TextButton", input)
-    confirm.Size = UDim2.new(0, 100, 0, 30)
-    confirm.Position = UDim2.new(0.5, -50, 1, 10)
-    confirm.Text = "SEND SPAM"
-    
-    confirm.MouseButton1Click:Connect(function()
-        for i = 1, 10 do
-            SendSpam(input.Text)
+    input.PlaceholderText = "اكتب الرسالة هنا..."
+    local btn = Instance.new("TextButton", input)
+    btn.Size = UDim2.new(0, 100, 0, 30)
+    btn.Position = UDim2.new(0.5, -50, 1, 5)
+    btn.Text = "ارسال"
+    btn.MouseButton1Click:Connect(function()
+        local msg = input.Text
+        for i = 1, 5 do
+            if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                textChatService.TextChannels.RBXGeneral:SendAsync(msg)
+            else
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+            end
             task.wait(0.5)
         end
         input:Destroy()
     end)
 end)
 
-AddButton("Clear HD Admin", function()
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v.Name:lower():find("hdadmin") then v:Destroy() end
+AddButton("Protect HD Client", function()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name == "HDAdminHDClient" then obj:Destroy() end
     end
 end)
 
-AddButton("VR7 Tool", function() 
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/VR7ss/OMK/refs/heads/main/VR7-ON-TOP"))() 
+AddButton("Full Clean Protection", function()
+    local targets = {"logs", "nv", "cmdbar", "clogs", "hdadminhdclient", "hdadmin"}
+    for _, obj in pairs(workspace:GetDescendants()) do
+        for _, name in pairs(targets) do if obj.Name:lower():find(name) then obj:Destroy() end end
+    end
 end)
 
-print("System Ready - English Version")
+AddButton("VR7 Tool", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/VR7ss/OMK/refs/heads/main/VR7-ON-TOP"))() end)
+AddButton("Player Finder", function() loadstring(game:HttpGet('https://pastebin.com/raw/1KF6k8ne'))() end)
+AddButton("Blood Script", function() loadstring(game:HttpGet('https://pastebin.com/raw/YE8hR6zG'))() end)
+
+-- Info
+local About = Instance.new("TextButton", MainFrame)
+About.Size = UDim2.new(0, 150, 0, 40)
+About.Position = UDim2.new(0.5, -75, 1, -50)
+About.Text = "System Info"
+About.MouseButton1Click:Connect(function() print("النظام جاهز للعمل") end)
